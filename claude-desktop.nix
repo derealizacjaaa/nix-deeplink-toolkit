@@ -61,7 +61,8 @@
 , systemd
 , vulkan-loader
 , wayland
-, xorg
+, libx11
+, libxcb
 , libseccomp
 , libcap_ng
 , qemu_kvm
@@ -135,8 +136,8 @@ let
       pipewire
       vulkan-loader
       wayland
-      xorg.libX11
-      xorg.libxcb
+      libx11
+      libxcb
     ];
 
     dontConfigure = true;
