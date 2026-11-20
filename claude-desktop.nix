@@ -74,11 +74,11 @@ let
 
   unwrapped = stdenv.mkDerivation rec {
     pname = "claude-desktop-unwrapped";
-    version = "1.19367.0";
+    version = "5.11492.5";
 
     src = fetchurl {
       url = "https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_amd64.deb";
-      hash = "sha256-dvVwcwwRhZJOJCPF+IonvsF8HnrbBV7NCUAaDpOpKZs=";
+      hash = "sha256-uWIIsgfkULdA99vjBPYHf+2A5/PTfd1UWZHE6CAVZM8=";
     };
 
     nativeBuildInputs = [
@@ -115,6 +115,11 @@ let
       nspr
       nss
       pango
+      # claude-native-binding.node links libpipewire directly (since 5.x).
+      # pipewire is also in runtimeDependencies, but autoPatchelfHook appends
+      # those only to executables — a .node shared object needs it on the
+      # dependency search path, i.e. here.
+      pipewire
       stdenv.cc.cc
       libseccomp # virtiofsd
       libcap_ng  # virtiofsd
