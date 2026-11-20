@@ -12,16 +12,24 @@
 #
 # Note: this build uses GitHub's public dev OAuth client, so the callback
 # scheme is x-github-desktop-dev-auth:// (already in mimeapps.list).
-{ lib, callPackage, github-desktop, electron_41 ? null, electron ? null }:
+{ lib, callPackage, github-desktop, electron_43 ? null, electron ? null }:
 
 let
   toolkit = callPackage ./deeplink-toolkit.nix { };
-  electronPkg = if electron_41 != null then electron_41 else electron;
+
+  # Must track the electron major that nixpkgs builds github-desktop against.
+  # Bumped 41 -> 43 on 2026-11-20: nixpkgs had already moved github-desktop
+  # 3.5.8 onto electron 43, so pinning 41 here was running app resources built
+  # for 43 under a 41 runtime — the exact ABI mismatch the assert below exists
+  # to catch, just inverted. Electron 41 is also EOL (marked insecure in
+  # nixpkgs since ~2026-11-16), and this pin was the only thing dragging it in.
+  expectedMajor = "43";
+  electronPkg = if electron_43 != null then electron_43 else electron;
 in
 assert lib.assertMsg (electronPkg != null)
-  "github-desktop-fixed: no electron package found (need the major github-desktop was built with, currently 41)";
-assert lib.assertMsg (lib.versions.major electronPkg.version == "41")
-  "github-desktop-fixed: electron ${electronPkg.version} != major 41 that github-desktop ${github-desktop.version} was built against — native modules (keytar.node etc.) are ABI-sensitive, pin the matching electron";
+  "github-desktop-fixed: no electron package found (need the major github-desktop was built with, currently ${expectedMajor})";
+assert lib.assertMsg (lib.versions.major electronPkg.version == expectedMajor)
+  "github-desktop-fixed: electron ${electronPkg.version} != major ${expectedMajor} that github-desktop ${github-desktop.version} was built against — native modules (keytar.node etc.) are ABI-sensitive, pin the matching electron";
 
 toolkit.fixElectronLauncher {
   pkg = github-desktop;
